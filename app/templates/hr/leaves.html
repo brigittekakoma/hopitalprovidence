@@ -1,1 +1,31 @@
-{% extends "base.html" %}{% block title %}Congés RH{% endblock %}{% block content %}<div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES</span><h1>Demandes de congé</h1></div></div><form method="post" action="{{ url_for('main.hr_leave_new') }}" class="panel form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Personnel<select name="staff_id" required>{% for x in staff %}<option value="{{ x.id }}">{{ x.employee_number }} — {{ x.full_name }}</option>{% endfor %}</select></label><label>Type<select name="leave_type"><option>ANNUEL</option><option>MALADIE</option><option>MATERNITE</option><option>EXCEPTIONNEL</option><option>AUTRE</option></select></label><label>Début<input type="date" name="start_date" required></label><label>Fin<input type="date" name="end_date" required></label><label>Motif / observation<input name="reason"></label><div class="form-actions"><button class="btn">Soumettre la demande</button></div></form><div class="panel"><h2>Suivi et validation</h2><table><thead><tr><th>Personnel</th><th>Type</th><th>Période</th><th>Motif</th><th>État</th><th>Décision</th></tr></thead><tbody>{% for x in requests %}<tr><td>{{ x.staff.full_name }}</td><td>{{ x.leave_type }}</td><td>{{ x.start_date }} au {{ x.end_date }}</td><td>{{ x.reason or '—' }}</td><td>{{ x.status }}</td><td>{% if x.status == 'EN_ATTENTE' %}<form method="post" action="{{ url_for('main.hr_leave_decision',leave_id=x.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small" name="decision" value="APPROUVE">Approuver</button> <button class="btn small secondary" name="decision" value="REFUSE">Refuser</button></form>{% else %}—{% endif %}</td></tr>{% else %}<tr><td colspan="6">Aucune demande enregistrée.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Congés RH · La Providence{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES</span><h1>Demandes de congé</h1><p>Suivi des demandes et des décisions administratives.</p></div></div>
+{% set ns = namespace(pending=0, approved=0, refused=0) %}
+{% for x in requests %}{% if x.status == 'EN_ATTENTE' %}{% set ns.pending = ns.pending + 1 %}{% elif x.status == 'APPROUVE' %}{% set ns.approved = ns.approved + 1 %}{% elif x.status == 'REFUSE' %}{% set ns.refused = ns.refused + 1 %}{% endif %}{% endfor %}
+<div class="stats-grid">
+  <div class="stat-card"><span>Total des demandes</span><strong>{{ requests|length }}</strong><small>Demandes enregistrées</small></div>
+  <div class="stat-card"><span>En attente</span><strong>{{ ns.pending }}</strong><small>Décision à prendre</small></div>
+  <div class="stat-card"><span>Approuvées</span><strong>{{ ns.approved }}</strong><small>Décisions enregistrées</small></div>
+  <div class="stat-card"><span>Refusées</span><strong>{{ ns.refused }}</strong><small>Décisions enregistrées</small></div>
+</div>
+<section class="panel">
+  <div class="panel-head"><div><h2>Soumettre une demande</h2><p class="muted">La demande sera soumise au circuit de décision existant.</p></div></div>
+  <form method="post" action="{{ url_for('main.hr_leave_new') }}" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Personnel<select name="staff_id" required>{% for x in staff %}<option value="{{ x.id }}">{{ x.employee_number }} — {{ x.full_name }}</option>{% endfor %}</select></label>
+    <label>Type de congé<select name="leave_type"><option>ANNUEL</option><option>MALADIE</option><option>MATERNITE</option><option>EXCEPTIONNEL</option><option>AUTRE</option></select></label>
+    <label>Date de début<input type="date" name="start_date" required></label>
+    <label>Date de fin<input type="date" name="end_date" required></label>
+    <label class="field-wide">Motif / observation<input name="reason" placeholder="Préciser le motif, si nécessaire"></label>
+    <div class="form-actions"><button class="btn">Soumettre la demande</button></div>
+  </form>
+</section>
+<section class="panel mt-3">
+  <div class="panel-head"><div><h2>Suivi et validation</h2><p class="muted">Les décisions disponibles sont limitées aux demandes en attente.</p></div></div>
+  <div class="table-wrap"><table><thead><tr><th>Personnel</th><th>Type</th><th>Période</th><th>Motif</th><th>État</th><th>Décision</th></tr></thead><tbody>
+  {% for x in requests %}<tr><td><strong>{{ x.staff.full_name }}</strong></td><td>{{ x.leave_type }}</td><td>{{ x.start_date }}<br><small>au {{ x.end_date }}</small></td><td>{{ x.reason or '—' }}</td><td><span class="status {{ 'warning' if x.status == 'EN_ATTENTE' else ('success' if x.status == 'APPROUVE' else 'danger') }}">{{ x.status }}</span></td><td>{% if x.status == 'EN_ATTENTE' %}<form method="post" action="{{ url_for('main.hr_leave_decision',leave_id=x.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-small" name="decision" value="APPROUVE">Approuver</button> <button class="btn btn-small secondary" name="decision" value="REFUSE">Refuser</button></form>{% else %}<span class="muted">Décision prise</span>{% endif %}</td></tr>{% else %}<tr><td colspan="6" class="empty">Aucune demande enregistrée.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}
