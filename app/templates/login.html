@@ -1,5 +1,26 @@
-<<<<<<< HEAD
-{% extends 'base.html' %}{% block title %}Connexion sécurisée · La Providence{% endblock %}{% block content %}<div class="lp-login-wrap"><section class="lp-login-card"><div class="lp-login-emblem"><img src="{{ url_for('static',filename='img/logo-hopital-la-providence.png') }}" alt="Logo Hôpital La Providence"></div><span class="lp-section-kicker">ESPACE PROFESSIONNEL</span><h1>Bienvenue à l’Hôpital La Providence</h1><p>Connectez-vous avec votre compte personnel pour accéder à votre espace de travail et aux modules autorisés.</p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Nom d’utilisateur<input name="username" autocomplete="username" required autofocus placeholder="Votre identifiant"></label><label>Mot de passe<input type="password" name="password" autocomplete="current-password" required placeholder="Votre mot de passe"></label><button class="btn lp-btn-gold" type="submit">Ouvrir ma session <span>→</span></button></form><small>Chaque compte est personnel. Ne partagez jamais vos identifiants.</small><a class="lp-back-home" href="{{ url_for('main.home') }}">← Retour à l’accueil</a></section></div>{% endblock %}
-=======
-{% extends 'base.html' %}{% block title %}Connexion sécurisée · La Providence{% endblock %}{% block content %}<div style="max-width:480px;margin:6vh auto"><section class="panel"><div class="kicker">PORTAIL DU PERSONNEL</div><h1 style="font:800 26px Manrope;margin:8px 0">Connexion sécurisée</h1><p class="muted" style="font-size:13px">Accès réservé aux utilisateurs autorisés de l’établissement.</p><form method="post" class="form-grid" style="margin-top:24px"><div class="field full"><label>Nom d’utilisateur</label><input name="username" autocomplete="username" required autofocus></div><div class="field full"><label>Mot de passe</label><input type="password" name="password" autocomplete="current-password" required></div><div class="form-actions"><button class="btn" type="submit">Ouvrir ma session</button></div></form><p class="muted" style="font-size:11px;margin:18px 0 0">Ne partagez jamais vos identifiants. Chaque accès est personnel.</p></section></div>{% endblock %}
->>>>>>> parent of 6d84ce5 (Fix CSRF token in login form)
+{% extends 'base.html' %}
+{% block title %}Connexion sécurisée · La Providence{% endblock %}
+{% block content %}
+<div class="lp-login-wrap">
+  <section class="lp-login-card">
+    <div class="lp-login-emblem">
+      <img src="{{ url_for('static', filename='img/logo-hopital-la-providence.png') }}" alt="Logo Hôpital La Providence">
+    </div>
+    <span class="lp-section-kicker">ESPACE PROFESSIONNEL</span>
+    <h1>Bienvenue à l’Hôpital La Providence</h1>
+    <p>Connectez-vous avec votre compte personnel pour accéder à votre espace de travail et aux modules autorisés.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Nom d’utilisateur
+        <input name="username" autocomplete="username" required autofocus placeholder="Votre identifiant">
+      </label>
+      <label>Mot de passe
+        <input type="password" name="password" autocomplete="current-password" required placeholder="Votre mot de passe">
+      </label>
+      <button class="btn lp-btn-gold" type="submit">Ouvrir ma session <span>→</span></button>
+    </form>
+    <small>Chaque compte est personnel. Ne partagez jamais vos identifiants.</small>
+    <a class="lp-back-home" href="{{ url_for('main.home') }}">← Retour à l’accueil</a>
+  </section>
+</div>
+{% endblock %}
