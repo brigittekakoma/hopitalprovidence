@@ -1,1 +1,77 @@
-{% extends 'base.html' %}{% block title %}Vue d’ensemble · La Providence{% endblock %}{% block content %}<div class="page-head"><div><div class="kicker">PILOTAGE DE L’ÉTABLISSEMENT</div><h1>Vue d’ensemble</h1><p>Indicateurs calculés à partir des enregistrements disponibles dans le système.</p></div><span class="btn light">Session ouverte</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px">{% for label,value in [('Patients',patients),('Admissions',admissions),('Factures',invoices),('Paiements',payments),('Dépenses',expenses),('Articles de stock',stock_items)] %}<article class="panel"><div class="kicker">{{ label }}</div><div style="font:800 29px Manrope;margin-top:10px">{{ value }}</div><div class="muted" style="font-size:11px">Enregistrements</div></article>{% endfor %}</div><section class="panel"><div class="panel-head"><h2>Modules de gestion</h2><span class="muted" style="font-size:11px">Développement progressif</span></div><div style="display:flex;flex-wrap:wrap;gap:10px"><a class="btn" href="{{ url_for('main.patients') }}">♡ Dossiers patients</a><span class="btn light">Admissions · À développer</span><span class="btn light">Facturation · À développer</span><span class="btn light">Stocks · À développer</span></div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Tableau de bord · Hôpital La Providence{% endblock %}
+{% block content %}
+<section class="dashboard-welcome">
+  <div>
+    <div class="kicker">CENTRE DE PILOTAGE · HÔPITAL LA PROVIDENCE</div>
+    <h1>Bonjour {{ current_user.full_name or current_user.username }} 👋</h1>
+    <p>Retrouvez les indicateurs disponibles et accédez rapidement à vos espaces de travail.</p>
+  </div>
+  <div class="dashboard-date">Espace sécurisé · Session active</div>
+</section>
+
+<div class="dashboard-section-title">
+  <div><h2>Indicateurs du système</h2><p>Volumes issus des enregistrements actuellement présents dans la base de données</p></div>
+</div>
+<section class="dashboard-stats" aria-label="Indicateurs de gestion">
+  {% for label,value,description in [
+    ('Dossiers patients',patients,'Dossiers enregistrés'),
+    ('Admissions',admissions,'Enregistrements d’admission'),
+    ('Factures',invoices,'Documents de facturation'),
+    ('Paiements',payments,'Opérations de paiement'),
+    ('Dépenses',expenses,'Opérations de dépense'),
+    ('Articles de stock',stock_items,'Références de stock')
+  ] %}
+  <article class="dashboard-stat">
+    <small>{{ label }}</small>
+    <strong>{{ value }}</strong>
+    <span>{{ description }}</span>
+  </article>
+  {% endfor %}
+</section>
+
+<div class="dashboard-section-title">
+  <div><h2>Accès rapide aux modules</h2><p>Ouvrez directement le service correspondant à votre tâche</p></div>
+</div>
+<section class="dashboard-modules">
+  <a class="dashboard-module" href="{{ url_for('main.reception') }}">
+    <span class="dashboard-module-icon">⌂</span><span><strong>Accueil & triage</strong><small>Accueil, orientation et première évaluation des patients</small></span><span class="module-arrow">›</span>
+  </a>
+  <a class="dashboard-module" href="{{ url_for('main.patients') }}">
+    <span class="dashboard-module-icon">♡</span><span><strong>Dossiers patients</strong><small>Registre, identification et consultation des dossiers</small></span><span class="module-arrow">›</span>
+  </a>
+  <a class="dashboard-module" href="{{ url_for('main.admissions') }}">
+    <span class="dashboard-module-icon">＋</span><span><strong>Admissions</strong><small>Enregistrement et suivi administratif des admissions</small></span><span class="module-arrow">›</span>
+  </a>
+  <a class="dashboard-module" href="{{ url_for('main.consultations') }}">
+    <span class="dashboard-module-icon">✚</span><span><strong>Consultations</strong><small>Suivi des consultations et informations cliniques</small></span><span class="module-arrow">›</span>
+  </a>
+  <a class="dashboard-module" href="{{ url_for('main.laboratory') }}">
+    <span class="dashboard-module-icon">⌕</span><span><strong>Laboratoire</strong><small>Demandes d’analyses et suivi des résultats</small></span><span class="module-arrow">›</span>
+  </a>
+  <a class="dashboard-module" href="{{ url_for('main.pharmacy') }}">
+    <span class="dashboard-module-icon">◫</span><span><strong>Pharmacie & stocks</strong><small>Articles, mouvements et suivi des disponibilités</small></span><span class="module-arrow">›</span>
+  </a>
+  <a class="dashboard-module" href="{{ url_for('main.billing') }}">
+    <span class="dashboard-module-icon">▤</span><span><strong>Facturation & caisse</strong><small>Factures, paiements et suivi des opérations</small></span><span class="module-arrow">›</span>
+  </a>
+  {% if can_access(current_user, 'hr.manage') %}
+  <a class="dashboard-module" href="{{ url_for('main.hr_staff_list') }}">
+    <span class="dashboard-module-icon">♙</span><span><strong>Ressources humaines</strong><small>Personnel, présences et gestion administrative</small></span><span class="module-arrow">›</span>
+  </a>
+  {% endif %}
+  {% if can_access(current_user, 'staff.manage') %}
+  <a class="dashboard-module" href="{{ url_for('main.staff_admin') }}">
+    <span class="dashboard-module-icon">⚿</span><span><strong>Personnel & autorisations</strong><small>Comptes utilisateurs, rôles et habilitations</small></span><span class="module-arrow">›</span>
+  </a>
+  {% endif %}
+  {% if can_access(current_user, 'audit.view') %}
+  <a class="dashboard-module" href="{{ url_for('main.audit_admin') }}">
+    <span class="dashboard-module-icon">≡</span><span><strong>Journal d’audit</strong><small>Traçabilité des opérations effectuées dans le système</small></span><span class="module-arrow">›</span>
+  </a>
+  {% endif %}
+</section>
+<div class="dashboard-footnote">
+  <strong>Information :</strong> les chiffres affichés correspondent uniquement aux données réellement enregistrées. L’Hôpital La Providence étant encore en phase de préparation, ce tableau de bord ne présente pas de statistiques d’activité hospitalière fictives.
+</div>
+{% endblock %}
