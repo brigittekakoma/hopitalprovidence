@@ -1,4 +1,15 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123b3a"><title>{% block title %}Hôpital La Providence{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static',filename='css/providence.css') }}"></head><body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123b3a"><title>{% block title %}Hôpital La Providence{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static',filename='css/providence.css') }}"></head><body>\n
+<div id="lp-page-loader" class="lp-page-loader" aria-hidden="true">
+  <div class="lp-loader-scene">
+    <div class="lp-loader-orbit lp-loader-orbit-one"></div>
+    <div class="lp-loader-orbit lp-loader-orbit-two"></div>
+    <img class="lp-loader-logo" src="{{ url_for('static',filename='img/logo-hopital-la-providence.png') }}" alt="">
+    <span class="lp-loader-caption">HÔPITAL LA PROVIDENCE</span>
+    <span class="lp-loader-subcaption">Préparation de votre espace…</span>
+    <div class="lp-loader-track"><span class="lp-loader-fill"></span></div>
+  </div>
+</div>
+
 <div class="shell {% if request.endpoint == 'main.home' %}public-shell{% endif %}">{% if request.endpoint != 'main.home' %}<aside class="rail"><a class="brand" href="{{ url_for('main.home') }}"><img src="{{ url_for('static',filename='img/logo-hopital-la-providence.png') }}" alt="Logo Hôpital La Providence"><span><b>LA PROVIDENCE</b><small>Gestion hospitalière</small></span></a><div class="rail-label">ESPACE DE TRAVAIL</div><nav><a href="{{ url_for('main.dashboard') }}">▦ <span>Vue d’ensemble</span></a><a href="{{ url_for('main.patients') }}">♡ <span>Dossiers patients</span></a><a href="{{ url_for('main.admissions') }}">＋ <span>Admissions</span></a><a href="{{ url_for('main.billing') }}">▤ <span>Facturation & caisse</span></a><a href="{{ url_for('main.pharmacy') }}">◫ <span>Stocks & pharmacie</span></a><a href="{{ url_for('main.laboratory') }}">⌕ <span>Laboratoire</span></a><a href="{{ url_for('main.consultations') }}">✚ <span>Consultations</span></a><a href="{{ url_for('main.reception') }}">⌂ <span>Accueil & triage</span></a>{% if can_access(current_user, 'reception.manage') %}<a href="{{ url_for('main.patient_appointment_change_requests') }}">↻ <span>Demandes patients</span></a>{% endif %}{% if can_access(current_user, 'hr.manage') %}<a href="{{ url_for('main.hr_staff_list') }}">♙ <span>Ressources humaines</span></a><a href="{{ url_for('main.payroll_index') }}">▤ <span>Paie & bulletins</span></a><a href="{{ url_for('main.hr_attendance') }}">◷ <span>Présences</span></a><a href="{{ url_for('main.hr_leaves') }}">▣ <span>Congés</span></a>{% endif %}{% if can_access(current_user, 'staff.manage') %}<a href="{{ url_for('main.staff_admin') }}">♙ <span>Personnel & accès</span></a><a href="{{ url_for('main.roles_admin') }}">⚿ <span>Rôles & autorisations</span></a>{% endif %}{% if can_access(current_user, 'settings.manage') %}<a href="{{ url_for('main.carousel_admin') }}">▧ <span>Carrousel accueil</span></a>{% endif %}{% if can_access(current_user, 'audit.view') %}<a href="{{ url_for('main.audit_admin') }}">≡ <span>Journal d’audit</span></a>{% endif %}</nav><div class="rail-foot">Confidentialité · Traçabilité<br>Accès selon les fonctions</div></aside>{% endif %}<main class="main"><header class="topbar {% if request.endpoint == 'main.home' %}public-topbar{% endif %}">{% if request.endpoint == 'main.home' %}<div class="topbar-brand"><a href="{{ url_for('main.home') }}"><img src="{{ url_for('static',filename='img/logo-hopital-la-providence.png') }}" alt="Logo La Providence"><span><small>PLATEFORME INSTITUTIONNELLE</small><strong>Hôpital La Providence</strong></span></a></div><nav class="public-nav"><a href="{{ url_for('main.home') }}#modules">Nos services</a><a href="{{ url_for('main.home') }}#about">À propos</a>{% if current_user.is_authenticated %}<a class="btn" href="{{ url_for('main.dashboard') }}">Mon espace</a><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">Déconnexion</button></form>{% else %}<a class="btn" href="{{ url_for('auth.login') }}">Connexion sécurisée</a>{% endif %}</nav>{% else %}<div><span class="eyebrow">SYSTÈME D’INFORMATION HOSPITALIER</span><strong>Hôpital La Providence</strong></div><div class="top-actions">{% if current_user.is_authenticated %}<span class="user-pill">{{ current_user.full_name }}</span><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit" style="border:0;background:none;cursor:pointer">Déconnexion</button></form>{% endif %}</div>{% endif %}</header><section class="content">{% with messages=get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="notice {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}{% block content %}{% endblock %}</section><footer class="site-footer {% if request.endpoint == 'main.home' %}public-footer{% endif %}"><div class="footer-main"><div class="footer-brand"><strong>HÔPITAL LA PROVIDENCE</strong><p>Projet hospitalier en préparation<br>Plateforme intégrée de gestion administrative et financière</p></div><div class="footer-nav"><a href="{{ url_for('main.home') }}">Accueil</a><a href="{{ url_for('auth.login') }}">Accès sécurisé</a><a href="{{ url_for('main.home') }}#about">À propos du projet</a></div><div class="footer-note"><span>CONFIDENTIALITÉ</span><p>Accès réservé aux utilisateurs autorisés.<br>Les données sont soumises aux règles de confidentialité.</p></div></div><div class="footer-bottom"><span>© {{ now().year if now is defined else 2026 }} Hôpital La Providence · Tous droits réservés</span><span>Conception : Système d’information hospitalier</span></div></footer></main></div>
 
 <script>
@@ -26,4 +37,44 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
-</body></html>
+
+<script>
+(function () {
+  const loader = document.getElementById('lp-page-loader');
+  if (!loader) return;
+  let leaving = false;
+  function showLoader() {
+    if (leaving) return;
+    leaving = true;
+    loader.classList.remove('lp-loader-hidden');
+    loader.classList.add('lp-loader-visible');
+    loader.setAttribute('aria-hidden', 'false');
+  }
+  function hideLoader() {
+    leaving = false;
+    loader.classList.add('lp-loader-hidden');
+    loader.classList.remove('lp-loader-visible');
+    loader.setAttribute('aria-hidden', 'true');
+  }
+  if (document.readyState === 'complete') hideLoader();
+  else window.addEventListener('load', hideLoader, { once: true });
+  document.addEventListener('click', function (event) {
+    const link = event.target.closest('a[href]');
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const href = link.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.hasAttribute('download') || link.target === '_blank') return;
+    const target = new URL(link.href, window.location.href);
+    if (target.origin !== window.location.origin || target.href === window.location.href) return;
+    showLoader();
+  });
+  document.addEventListener('submit', function (event) {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || form.target === '_blank') return;
+    if (form.dataset.noPageLoader === '1' || form.checkValidity && !form.checkValidity()) return;
+    showLoader();
+  }, true);
+  window.addEventListener('pageshow', hideLoader);
+  window.addEventListener('pagehide', showLoader);
+})();
+</script>
+\n</body></html>
