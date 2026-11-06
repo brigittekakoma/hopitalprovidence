@@ -1,1 +1,30 @@
-{% extends "base.html" %}{% block title %}Présences RH{% endblock %}{% block content %}<div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES</span><h1>Présences et horaires</h1><p>Une fiche par agent et par journée.</p></div></div><form method="post" action="{{ url_for('main.hr_attendance_save') }}" class="panel form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Personnel<select name="staff_id" required>{% for x in staff %}<option value="{{ x.id }}">{{ x.employee_number }} — {{ x.full_name }}</option>{% endfor %}</select></label><label>Date<input type="date" name="work_date" value="{{ today.isoformat() }}" required></label><label>Service / poste horaire<input name="shift_label" placeholder="Ex. matin"></label><label>Arrivée<input type="time" name="check_in"></label><label>Départ<input type="time" name="check_out"></label><label>Statut<select name="status"><option>PRESENT</option><option>ABSENT</option><option>RETARD</option><option>MISSION</option><option>CONGE</option></select></label><label>Observation<input name="note"></label><div class="form-actions"><button class="btn">Enregistrer la présence</button></div></form><div class="panel"><h2>Historique récent</h2><table><thead><tr><th>Date</th><th>Personnel</th><th>Horaire</th><th>Arrivée</th><th>Départ</th><th>Statut</th></tr></thead><tbody>{% for r in records %}<tr><td>{{ r.work_date }}</td><td>{{ r.staff.full_name }}</td><td>{{ r.shift_label or '—' }}</td><td>{{ r.check_in or '—' }}</td><td>{{ r.check_out or '—' }}</td><td>{{ r.status }}</td></tr>{% else %}<tr><td colspan="6">Aucune présence enregistrée.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Présences RH · La Providence{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES</span><h1>Présences et horaires</h1><p>Enregistrement journalier des présences du personnel.</p></div></div>
+<div class="stats-grid">
+  <div class="stat-card"><span>Fiches récentes</span><strong>{{ records|length }}</strong><small>Historique affiché</small></div>
+  <div class="stat-card"><span>Personnel disponible</span><strong>{{ staff|length }}</strong><small>Dossiers sélectionnables</small></div>
+  <div class="stat-card"><span>Date de saisie</span><strong>{{ today.strftime('%d/%m/%Y') }}</strong><small>Date proposée par défaut</small></div>
+</div>
+<section class="panel">
+  <div class="panel-head"><div><h2>Nouvelle fiche de présence</h2><p class="muted">Une fiche par agent et par journée.</p></div></div>
+  <form method="post" action="{{ url_for('main.hr_attendance_save') }}" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Personnel<select name="staff_id" required>{% for x in staff %}<option value="{{ x.id }}">{{ x.employee_number }} — {{ x.full_name }}</option>{% endfor %}</select></label>
+    <label>Date<input type="date" name="work_date" value="{{ today.isoformat() }}" required></label>
+    <label>Service / poste horaire<input name="shift_label" placeholder="Ex. matin"></label>
+    <label>Heure d’arrivée<input type="time" name="check_in"></label>
+    <label>Heure de départ<input type="time" name="check_out"></label>
+    <label>Statut<select name="status"><option>PRESENT</option><option>ABSENT</option><option>RETARD</option><option>MISSION</option><option>CONGE</option></select></label>
+    <label class="field-wide">Observation<input name="note" placeholder="Observation éventuelle"></label>
+    <div class="form-actions"><button class="btn">Enregistrer la présence</button></div>
+  </form>
+</section>
+<section class="panel mt-3">
+  <div class="panel-head"><div><h2>Historique récent</h2><p class="muted">Fiches de présence déjà enregistrées.</p></div><span class="count-pill">{{ records|length }} fiche(s)</span></div>
+  <div class="table-wrap"><table><thead><tr><th>Date</th><th>Personnel</th><th>Horaire</th><th>Arrivée</th><th>Départ</th><th>Statut</th></tr></thead><tbody>
+  {% for r in records %}<tr><td>{{ r.work_date }}</td><td><strong>{{ r.staff.full_name }}</strong></td><td>{{ r.shift_label or '—' }}</td><td>{{ r.check_in or '—' }}</td><td>{{ r.check_out or '—' }}</td><td><span class="status {{ 'success' if r.status == 'PRESENT' else 'warning' }}">{{ r.status }}</span></td></tr>{% else %}<tr><td colspan="6" class="empty">Aucune présence enregistrée.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}
