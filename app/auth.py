@@ -15,7 +15,7 @@ def login():
             session.permanent = True
             db.session.add(AuditLog(user_id=u.id, action="CONNEXION", entity="User", entity_id=str(u.id), details="Connexion réussie"))
             db.session.commit()
-            return redirect(url_for("main.dashboard"))
+            return redirect(url_for("main.home"))
         flash("Identifiants incorrects.","danger")
     return render_template("login.html")
 @auth_bp.post("/logout")
