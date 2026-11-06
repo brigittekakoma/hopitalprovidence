@@ -7,3 +7,5 @@ psycopg[binary]>=3.2,<4
 gunicorn>=22,<24
 python-dotenv>=1,<2
 reportlab>=4.2,<5
+
+Pillow>=10,<13
