@@ -37,9 +37,12 @@ def create_app(test_config=None):
         SESSION_COOKIE_SECURE=os.getenv("COOKIE_SECURE", "false").lower() == "true",
         PERMANENT_SESSION_LIFETIME=timedelta(minutes=45),
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,
+        UPLOAD_FOLDER=os.getenv("UPLOAD_FOLDER", str(Path(app.instance_path) / "uploads")),
     )
     if test_config:
         app.config.update(test_config)
+
+    Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
 
     db.init_app(app)
     login_manager.init_app(app)
