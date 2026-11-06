@@ -33,6 +33,7 @@ class Patient(db.Model):
     address = db.Column(db.Text)
     emergency_contact = db.Column(db.String(160))
     blood_group = db.Column(db.String(5))
+    photo_path = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 class HospitalService(db.Model):
     __tablename__="hospital_services"
@@ -413,6 +414,7 @@ class StaffProfile(db.Model):
     phone = db.Column(db.String(40))
     email = db.Column(db.String(160))
     status = db.Column(db.String(30), default="ACTIF", nullable=False)
+    photo_path = db.Column(db.String(255))
     user_id = db.Column(db.ForeignKey("users.id"), unique=True)
     user = db.relationship("User", backref=db.backref("staff_profile", uselist=False))
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
