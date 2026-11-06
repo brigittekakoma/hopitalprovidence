@@ -209,3 +209,19 @@ td{color:#29463f}
  .footer-main{grid-template-columns:1fr;gap:18px}.footer-note{grid-column:auto}.footer-bottom{flex-direction:column}.site-footer{padding:0 18px}
  .lp-login-card{padding:25px 20px}.lp-login-card h1{font-size:24px}.table-tools{align-items:stretch;flex-direction:column}
 }
+
+
+/* Portraits et recadrage */
+.photo-field{grid-column:1/-1;background:#f5f9f6;border:1px solid var(--lp-line);border-radius:14px;padding:18px}
+.photo-field>label{display:block;font-weight:800;margin-bottom:8px}
+.photo-field>input{display:block;width:100%;max-width:520px}
+.photo-field>small,.field-help{display:block;color:var(--lp-muted);font-size:12px;margin-top:7px}
+.photo-editor{margin-top:16px;max-width:560px}
+.photo-editor-stage{height:360px;max-width:560px;background:#132d29;border-radius:12px;overflow:hidden}
+.photo-editor-stage img{display:block;max-width:100%;max-height:360px}
+.photo-editor-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:12px}
+.photo-preview{margin-top:14px}
+.photo-preview img{width:120px;height:120px;object-fit:cover;border-radius:50%;border:4px solid white;box-shadow:0 4px 18px rgba(16,63,58,.16)}
+.patient-avatar-photo{object-fit:cover;display:block;border-radius:50%}
+.id-avatar-photo{object-fit:cover;display:block;border-radius:12px}
+@media(max-width:650px){.photo-editor-stage{height:280px}.photo-editor-actions>*{flex:1}}
