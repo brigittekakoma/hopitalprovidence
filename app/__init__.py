@@ -11,6 +11,7 @@ import subprocess
 import shutil
 from pathlib import Path
 from sqlalchemy.engine import make_url
+from sqlalchemy import inspect, text
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -56,6 +57,24 @@ def create_app(test_config=None):
     from .auth import auth_bp
     app.register_blueprint(bp)
     app.register_blueprint(auth_bp)
+
+    # Migration additive et idempotente : les déploiements précédents peuvent
+    # avoir créé les modèles avant l'ajout des colonnes photo_path.
+    # Ne supprime ni ne modifie aucune donnée existante.
+    with app.app_context():
+        inspector = inspect(db.engine)
+        existing_tables = set(inspector.get_table_names())
+        for table_name in ("patients", "staff_profiles"):
+            if table_name not in existing_tables:
+                continue
+            existing_columns = {column["name"] for column in inspect(db.engine).get_columns(table_name)}
+            if "photo_path" not in existing_columns:
+                if db.engine.dialect.name == "postgresql":
+                    with db.engine.begin() as connection:
+                        connection.execute(text(f'ALTER TABLE "{table_name}" ADD COLUMN IF NOT EXISTS photo_path VARCHAR(255)'))
+                elif db.engine.dialect.name == "sqlite":
+                    with db.engine.begin() as connection:
+                        connection.execute(text(f'ALTER TABLE "{table_name}" ADD COLUMN photo_path VARCHAR(255)'))
 
     # Contrôle serveur des accès par module : les écrans ne sont pas protégés
     # uniquement par la visibilité des liens de navigation.
