@@ -263,4 +263,26 @@ def create_app(test_config=None):
     def health():
         return {"status": "ok", "application": "Hopital La Providence"}, 200
 
+
+    # Pages d'erreur contrôlées : journaliser côté serveur sans exposer les détails techniques.
+    from werkzeug.exceptions import HTTPException
+
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        db.session.rollback()
+        app.logger.error("Erreur HTTP 500 sur %s %s", request.method, request.path, exc_info=error)
+        return render_template("errors/500.html"), 500
+
+    @app.errorhandler(Exception)
+    def handle_unexpected_exception(error):
+        if isinstance(error, HTTPException):
+            return error
+        db.session.rollback()
+        app.logger.exception("Exception non gérée sur %s %s", request.method, request.path)
+        return render_template("errors/500.html"), 500
+
     return app
