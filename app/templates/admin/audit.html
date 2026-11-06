@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block title %}Journal d'audit · La Providence{% endblock %}{% block content %}
+<div class="page-intro"><div><span class="eyebrow">TRAÇABILITÉ</span><h1>Journal des opérations</h1><p>Historique des actions enregistrées dans le système.</p></div></div>
+<div class="panel"><div class="table-wrap"><table><thead><tr><th>Date et heure</th><th>Utilisateur</th><th>Action</th><th>Objet</th><th>Identifiant</th><th>Détails</th></tr></thead><tbody>{% for log in logs %}<tr><td>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') if log.created_at else '—' }}</td><td>{{ log.user_id or 'Système' }}</td><td>{{ log.action }}</td><td>{{ log.entity }}</td><td>{{ log.entity_id or '—' }}</td><td>{{ log.details or '—' }}</td></tr>{% else %}<tr><td colspan="6" class="empty">Aucune opération enregistrée.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

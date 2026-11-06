@@ -1,0 +1,1 @@
+{% extends 'patient_portal/layout.html' %}{% block heading %}{{ title }}{% endblock %}{% block content %}<section class="portal-card"><p>{{ message }}</p><a class="btn" href="{{ url_for('main.patient_portal_login') }}">Aller à la connexion</a></section>{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }} · La Providence{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="kicker">IDENTITÉ & COORDONNÉES</div><h1>{{ page_title }}</h1><p>Recherchez d’abord le patient afin d’éviter la création de dossiers en double.</p></div><a class="btn light" href="{{ url_for('main.patients') }}">← Retour au registre</a></div>
+<div id="duplicate-panel" class="panel duplicate-panel" hidden aria-live="polite"><div class="duplicate-heading">⚠ Un ou plusieurs dossiers semblent déjà exister</div><p>Vérifiez l’identité et ouvrez le dossier correspondant. Ne créez pas un second dossier administratif.</p><div id="duplicate-results"></div></div>
+<form method="post" class="panel form-grid" id="patient-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="field"><label>Numéro du patient *</label><input name="patient_number" value="{{ form.get('patient_number','') }}" required maxlength="40" placeholder="Ex. HLP-2026-0001"></div>
+<div class="field"><label>Nom complet *</label><input id="patient-name" name="full_name" value="{{ form.get('full_name','') }}" required maxlength="180" autocomplete="off"></div>
+<div class="field"><label>Sexe</label><select name="sex"><option value="">Non précisé</option><option value="F" {{ 'selected' if form.get('sex')=='F' }}>Féminin</option><option value="M" {{ 'selected' if form.get('sex')=='M' }}>Masculin</option></select></div>
+<div class="field"><label>Date de naissance</label><input id="patient-birth" type="date" name="birth_date" value="{{ form.get('birth_date','') }}"></div>
+<div class="field"><label>Téléphone</label><input id="patient-phone" name="phone" value="{{ form.get('phone','') }}" maxlength="40"></div>
+<div class="field"><label>Adresse e-mail</label><input type="email" name="email" value="{{ form.get('email','') }}" maxlength="160"></div>
+<div class="field"><label>Groupe sanguin (facultatif)</label><select name="blood_group"><option value="">Non renseigné</option>{% for g in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}<option value="{{ g }}" {{ 'selected' if form.get('blood_group')==g else '' }}>{{ g }}</option>{% endfor %}</select></div>
+<div class="field"><label>Personne à contacter en urgence</label><input name="emergency_contact" value="{{ form.get('emergency_contact','') }}"></div>
+<div class="field full"><label>Adresse / commune</label><textarea name="address" rows="2">{{ form.get('address','') }}</textarea></div>
+<div class="form-actions"><a class="btn light" href="{{ url_for('main.patients') }}">Annuler</a><button class="btn" type="submit">Enregistrer le dossier</button></div></form>
+<script>
+(() => {
+ const input=document.getElementById('patient-name'), panel=document.getElementById('duplicate-panel'), results=document.getElementById('duplicate-results');
+ let timer=null, last='';
+ input.addEventListener('input',()=>{clearTimeout(timer); const q=input.value.trim(); if(q.length<3){panel.hidden=true;results.innerHTML='';return;} timer=setTimeout(async()=>{if(q===last)return;last=q;try{const r=await fetch('{{ url_for("main.patient_duplicate_search") }}?q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}});const data=await r.json();results.innerHTML='';if(data.matches.length){panel.hidden=false;data.matches.forEach(p=>{const card=document.createElement('div');card.className='duplicate-result';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=p.name+' — '+p.number;const meta=document.createElement('small');meta.textContent='Naissance : '+p.birth_date+' · Téléphone : '+p.phone;info.append(strong,meta);const link=document.createElement('a');link.className='btn btn-small';link.href=p.url;link.textContent='Ouvrir le dossier';card.append(info,link);results.append(card);});}else{panel.hidden=true;}}catch(e){panel.hidden=true;}},300);});
+})();
+</script>
+{% endblock %}

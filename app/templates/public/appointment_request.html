@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block title %}Demander une consultation{% endblock %}{% block content %}
+<section class="page-intro"><div><span class="eyebrow">SERVICE AUX PATIENTS</span><h1>Demander une consultation</h1><p>Votre demande sera confirmée uniquement après vérification par l'accueil.</p></div></section>
+<section class="panel form-panel"><form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label>Nom complet<input name="full_name" maxlength="180" required></label><label>E-mail<input type="email" name="email" maxlength="160" required></label><label>Téléphone<input name="phone" maxlength="40" required></label>
+<label>Service<select name="service_id"><option value="">À orienter</option>{% for s in services %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></label>
+<label>Date souhaitée<input type="date" name="preferred_date" min="{{ today_iso }}" required></label><label>Période<select name="preferred_period"><option value="INDIFFERENT">Indifférent</option><option value="MATIN">Matin</option><option value="APRES_MIDI">Après-midi</option></select></label>
+<label class="span-two">Motif bref (facultatif)<textarea name="reason" maxlength="500" placeholder="Évitez les données médicales confidentielles."></textarea></label>
+<p class="span-two privacy-note">Ne pas utiliser en cas d'urgence. Ce formulaire n'est pas surveillé en continu.</p><div class="span-two"><button class="btn primary">Envoyer la demande</button></div></form></section>{% endblock %}

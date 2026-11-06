@@ -1,0 +1,4 @@
+
+/* Actions de dossier et impression multi-support */
+.row-actions{display:flex;gap:6px;flex-wrap:wrap;white-space:nowrap}.btn-danger{background:#fff0ed!important;color:#9b3426!important;border:1px solid #efc4bb!important}.receipt-toolbar{max-width:760px;margin:18px auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.receipt-toolbar strong{margin-right:auto}.detail-grid{break-inside:avoid}
+@media print{.page-head .actions,.row-actions,.no-print{display:none!important}.page-head{margin-bottom:10mm}.panel{box-shadow:none!important;border:0!important}.detail-grid{display:grid!important;grid-template-columns:1fr 1fr!important}.privacy-note{font-size:9pt}}
