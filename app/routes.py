@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+from uuid import uuid4
 from decimal import Decimal, InvalidOperation
 from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response, send_file, jsonify, session
 from flask_login import login_required, current_user
@@ -109,15 +110,12 @@ def _find_existing_patient(name, phone=None, birth_date=None):
 def patient_new():
     if request.method == "POST":
         form = request.form
-        number = form.get("patient_number", "").strip()
+        number = ""
         name = " ".join(form.get("full_name", "").split())
         phone = form.get("phone", "").strip() or None
         birth_raw = form.get("birth_date", "").strip()
         errors = []
-        if not number: errors.append("Le numéro du patient est obligatoire.")
         if not name: errors.append("Le nom complet est obligatoire.")
-        if number and Patient.query.filter_by(patient_number=number).first():
-            errors.append("Ce numéro de patient existe déjà.")
         birth_date = None
         if birth_raw:
             try: birth_date = datetime.strptime(birth_raw, "%Y-%m-%d").date()
@@ -130,7 +128,7 @@ def patient_new():
         if errors:
             for error in errors: flash(error, "danger")
             return render_template("patients/form.html", form=form, page_title="Nouveau dossier patient")
-        patient = Patient(patient_number=number, full_name=name, phone=phone,
+        patient = Patient(patient_number=f"TEMP-{uuid4().hex}", full_name=name, phone=phone,
             sex=form.get("sex") or None, birth_date=birth_date,
             email=form.get("email", "").strip() or None,
             address=form.get("address", "").strip() or None,
@@ -138,6 +136,7 @@ def patient_new():
             blood_group=form.get("blood_group", "").strip() or None)
         db.session.add(patient)
         db.session.flush()
+        patient.patient_number = f"HLP-{datetime.utcnow().year}-{patient.id:06d}"
         db.session.add(AuditLog(user_id=current_user.id, action="CREATION", entity="Patient",
             entity_id=str(patient.id), details="Création du dossier administratif patient"))
         db.session.commit()
@@ -1397,17 +1396,15 @@ def hr_staff_new():
     if not user_has_permission(current_user, "hr.manage"):
         flash("Accès RH non autorisé.", "danger"); return redirect(url_for("main.dashboard"))
     if request.method == "POST":
-        f=request.form; number=f.get("employee_number","").strip(); name=" ".join(f.get("full_name","").split()); title=f.get("job_title","").strip()
-        if not number or not name or not title:
-            flash("Le matricule, le nom et la fonction sont obligatoires.", "danger")
-        elif StaffProfile.query.filter_by(employee_number=number).first():
-            flash("Ce matricule existe déjà.", "danger")
+        f=request.form; name=" ".join(f.get("full_name","").split()); title=f.get("job_title","").strip()
+        if not name or not title:
+            flash("Le nom et la fonction sont obligatoires.", "danger")
         else:
             hired=None
             try: hired=datetime.strptime(f.get("hired_on"), "%Y-%m-%d").date() if f.get("hired_on") else None
             except ValueError: flash("Date d'engagement invalide.", "danger"); return render_template("hr/staff_form.html", form=f)
-            profile=StaffProfile(employee_number=number, full_name=name, job_title=title, department=f.get("department") or None, contract_type=f.get("contract_type") or None, contract_reference=f.get("contract_reference") or None, hired_on=hired, phone=f.get("phone") or None, email=f.get("email") or None, status=f.get("status") or "ACTIF")
-            db.session.add(profile); db.session.flush(); db.session.add(AuditLog(user_id=current_user.id, action="CREATION", entity="Personnel", entity_id=str(profile.id), details="Création du dossier RH")); db.session.commit()
+            profile=StaffProfile(employee_number=f"TEMP-{uuid4().hex}", full_name=name, job_title=title, department=f.get("department") or None, contract_type=f.get("contract_type") or None, contract_reference=f.get("contract_reference") or None, hired_on=hired, phone=f.get("phone") or None, email=f.get("email") or None, status=f.get("status") or "ACTIF")
+            db.session.add(profile); db.session.flush(); profile.employee_number=f"HLP-RH-{datetime.utcnow().year}-{profile.id:06d}"; db.session.add(AuditLog(user_id=current_user.id, action="CREATION", entity="Personnel", entity_id=str(profile.id), details="Création du dossier RH")); db.session.commit()
             flash("Dossier du personnel créé. Sa carte de service est disponible immédiatement.", "success"); return redirect(url_for("main.staff_card", staff_id=profile.id))
         return render_template("hr/staff_form.html", form=f)
     return render_template("hr/staff_form.html", form={})
