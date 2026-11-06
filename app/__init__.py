@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
@@ -90,7 +90,7 @@ def create_app(test_config=None):
             from .routes import user_has_permission
             if not user_has_permission(current_user, required):
                 flash("Votre compte ne possède pas l'autorisation nécessaire pour cette fonction.", "danger")
-                return redirect(url_for("main.dashboard"))
+                return redirect(url_for("main.home") if endpoint == "main.dashboard" else url_for("main.dashboard"))
         return None
 
     @app.cli.command("send-appointment-reminders")
