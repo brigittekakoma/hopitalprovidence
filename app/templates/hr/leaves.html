@@ -4,11 +4,11 @@
 <div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES</span><h1>Demandes de congé</h1><p>Suivi des demandes et des décisions administratives.</p></div></div>
 {% set ns = namespace(pending=0, approved=0, refused=0) %}
 {% for x in requests %}{% if x.status == 'EN_ATTENTE' %}{% set ns.pending = ns.pending + 1 %}{% elif x.status == 'APPROUVE' %}{% set ns.approved = ns.approved + 1 %}{% elif x.status == 'REFUSE' %}{% set ns.refused = ns.refused + 1 %}{% endif %}{% endfor %}
-<div class="stats-grid">
-  <div class="stat-card"><span>Total des demandes</span><strong>{{ requests|length }}</strong><small>Demandes enregistrées</small></div>
-  <div class="stat-card"><span>En attente</span><strong>{{ ns.pending }}</strong><small>Décision à prendre</small></div>
-  <div class="stat-card"><span>Approuvées</span><strong>{{ ns.approved }}</strong><small>Décisions enregistrées</small></div>
-  <div class="stat-card"><span>Refusées</span><strong>{{ ns.refused }}</strong><small>Décisions enregistrées</small></div>
+<div class="metric-grid">
+  <div class="metric-card"><span>Total des demandes</span><strong>{{ requests|length }}</strong><small>Demandes enregistrées</small></div>
+  <div class="metric-card"><span>En attente</span><strong>{{ ns.pending }}</strong><small>Décision à prendre</small></div>
+  <div class="metric-card"><span>Approuvées</span><strong>{{ ns.approved }}</strong><small>Décisions enregistrées</small></div>
+  <div class="metric-card"><span>Refusées</span><strong>{{ ns.refused }}</strong><small>Décisions enregistrées</small></div>
 </div>
 <section class="panel">
   <div class="panel-head"><div><h2>Soumettre une demande</h2><p class="muted">La demande sera soumise au circuit de décision existant.</p></div></div>
