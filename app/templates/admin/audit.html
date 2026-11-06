@@ -1,4 +1,9 @@
-{% extends 'base.html' %}{% block title %}Journal d'audit · La Providence{% endblock %}{% block content %}
-<div class="page-intro"><div><span class="eyebrow">TRAÇABILITÉ</span><h1>Journal des opérations</h1><p>Historique des actions enregistrées dans le système.</p></div></div>
-<div class="panel"><div class="table-wrap"><table><thead><tr><th>Date et heure</th><th>Utilisateur</th><th>Action</th><th>Objet</th><th>Identifiant</th><th>Détails</th></tr></thead><tbody>{% for log in logs %}<tr><td>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') if log.created_at else '—' }}</td><td>{{ log.user_id or 'Système' }}</td><td>{{ log.action }}</td><td>{{ log.entity }}</td><td>{{ log.entity_id or '—' }}</td><td>{{ log.details or '—' }}</td></tr>{% else %}<tr><td colspan="6" class="empty">Aucune opération enregistrée.</td></tr>{% endfor %}</tbody></table></div></div>
+{% extends "base.html" %}
+{% block title %}Journal d'audit · La Providence{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="eyebrow">ADMINISTRATION · TRAÇABILITÉ</span><h1>Journal des opérations</h1><p>Historique des actions consignées par l’application.</p></div></div>
+<div class="metric-grid"><div class="metric-card"><span>Événements affichés</span><strong>{{ logs|length }}</strong><small>Enregistrements retournés</small></div><div class="metric-card"><span>Traçabilité</span><strong>Journal</strong><small>Consultation des actions consignées</small></div></div>
+<section class="panel"><div class="panel-head"><div><h2>Historique d’activité</h2><p class="muted">Les informations sont présentées telles qu’enregistrées dans le journal.</p></div><span class="count-pill">{{ logs|length }} événement(s)</span></div>
+<div class="table-wrap"><table><thead><tr><th>Date et heure</th><th>Utilisateur</th><th>Action</th><th>Objet</th><th>Identifiant</th><th>Détails</th></tr></thead><tbody>{% for log in logs %}<tr><td>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') if log.created_at else '—' }}</td><td>{{ log.user_id or 'Système' }}</td><td><strong>{{ log.action }}</strong></td><td>{{ log.entity }}</td><td>{{ log.entity_id or '—' }}</td><td>{{ log.details or '—' }}</td></tr>{% else %}<tr><td colspan="6" class="empty">Aucune opération enregistrée.</td></tr>{% endfor %}</tbody></table></div></section>
+<p class="privacy-note">Le journal permet de consulter les événements consignés par le système. Il ne remplace pas une procédure institutionnelle de contrôle et de conservation des données.</p>
 {% endblock %}
