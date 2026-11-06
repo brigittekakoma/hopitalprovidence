@@ -30,6 +30,18 @@
   {% endfor %}
 </section>
 
+<section class="analytics-grid">
+  <article class="analytics-card"><div class="analytics-card-head"><div><span class="eyebrow">VUE SYNTHÉTIQUE</span><h2>Répartition des données</h2><p>Volumes enregistrés dans la base actuelle</p></div><span class="analytics-icon analytics-icon-green">◉</span></div><div class="chart-wrap"><canvas id="overviewChart" role="img" aria-label="Graphique des volumes par module"></canvas></div></article>
+  <article class="analytics-card"><div class="analytics-card-head"><div><span class="eyebrow">INDICATEURS</span><h2>État du système</h2><p>Comptages réels, sans données simulées</p></div><span class="analytics-icon analytics-icon-gold">✦</span></div><div class="system-indicators">
+  {% for icon,label,value,color in [('♙','Patients',patients,'green'),('＋','Admissions',admissions,'blue'),('▤','Factures',invoices,'gold'),('↗','Paiements',payments,'purple'),('◈','Dépenses',expenses,'orange'),('▦','Articles stock',stock_items,'teal')] %}
+  <div class="system-indicator"><span class="indicator-symbol {{ color }}">{{ icon }}</span><div><small>{{ label }}</small><strong>{{ value }}</strong></div></div>
+  {% endfor %}
+  </div></article>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(()=>{const el=document.getElementById('overviewChart');if(!el||!window.Chart)return;new Chart(el,{type:'bar',data:{labels:['Patients','Admissions','Factures','Paiements','Dépenses','Stocks'],datasets:[{label:'Enregistrements',data:[{{ patients|int }},{{ admissions|int }},{{ invoices|int }},{{ payments|int }},{{ expenses|int }},{{ stock_items|int }}],backgroundColor:['#197765','#4d91b7','#c49a55','#8065b6','#d88b52','#399b9a'],borderRadius:9,borderSkipped:false,maxBarThickness:38}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#123b37',padding:12,displayColors:false}},scales:{x:{grid:{display:false},ticks:{color:'#60766f',font:{size:11}}},y:{beginAtZero:true,ticks:{precision:0,color:'#60766f'},grid:{color:'rgba(16,63,58,.08)'}}}}});})();
+</script>
 <div class="dashboard-section-title">
   <div><h2>Accès rapide aux modules</h2><p>Ouvrez directement le service correspondant à votre tâche</p></div>
 </div>
