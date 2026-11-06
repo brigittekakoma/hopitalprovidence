@@ -1,13 +1,38 @@
 from datetime import datetime, date, timedelta
+import os
+from pathlib import Path
 from uuid import uuid4
 from decimal import Decimal, InvalidOperation
-from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response, send_file, jsonify, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, make_response, send_file, jsonify, session, current_app, abort
 from flask_login import login_required, current_user
 from sqlalchemy import or_, func
+from PIL import Image, ImageOps, UnidentifiedImageError
 from . import db
 from .models import Patient, Admission, Invoice, Payment, InvoiceCoverageAuthorization, Expense, StockItem, StockMovement, Supplier, StockBatch, PharmacyDispense, PharmacyDispenseLine, AuditLog, Ward, HospitalRoom, HospitalBed, HospitalService, ServiceItem, Tariff, InvoiceLine, LabTest, LabOrder, LabResult, ClinicalConsultation, ConsultationVitals, Prescription, PrescriptionLine, Appointment, OnlineAppointmentRequest, ProfessionalSchedule, ReceptionVisit, TriageAssessment, User, Role, Permission, StaffProfile, StaffAttendance, StaffLeaveRequest, PayrollComponent, PayrollRecord, PayrollLine, HomeSlide, PatientPortalAccount, PatientAppointmentChangeRequest, AppointmentNotification
 
 bp = Blueprint("main", __name__)
+
+
+def _save_person_photo(upload, prefix):
+    """Validate and normalize an uploaded/cropped image into a private JPEG file."""
+    if not upload or not upload.filename:
+        return None
+    try:
+        upload.stream.seek(0)
+        image = Image.open(upload.stream)
+        if image.format not in {"JPEG", "PNG", "WEBP"}:
+            raise ValueError("Format d’image non accepté. Utilisez JPG, PNG ou WEBP.")
+        image.verify()
+        upload.stream.seek(0)
+        image = ImageOps.exif_transpose(Image.open(upload.stream)).convert("RGB")
+        image.thumbnail((1400, 1400))
+        filename = f"{prefix}-{uuid4().hex}.jpg"
+        destination = Path(current_app.config["UPLOAD_FOLDER"]) / filename
+        image.save(destination, format="JPEG", quality=88, optimize=True)
+        return filename
+    except (UnidentifiedImageError, OSError):
+        raise ValueError("La photo est illisible. Sélectionnez une image JPG, PNG ou WEBP valide.")
+
 
 # Catalogue des autorisations propres à l'Hôpital La Providence.
 PERMISSION_CATALOG = {
@@ -128,7 +153,12 @@ def patient_new():
         if errors:
             for error in errors: flash(error, "danger")
             return render_template("patients/form.html", form=form, page_title="Nouveau dossier patient")
-        patient = Patient(patient_number=f"TEMP-{uuid4().hex}", full_name=name, phone=phone,
+        try:
+            photo_path = _save_person_photo(request.files.get("photo"), "patient")
+        except ValueError as exc:
+            flash(str(exc), "danger")
+            return render_template("patients/form.html", form=form, page_title="Nouveau dossier patient")
+        patient = Patient(patient_number=f"TEMP-{uuid4().hex}", full_name=name, phone=phone, photo_path=photo_path,
             sex=form.get("sex") or None, birth_date=birth_date,
             email=form.get("email", "").strip() or None,
             address=form.get("address", "").strip() or None,
@@ -170,6 +200,13 @@ def patient_edit(patient_id):
         if errors:
             for error in errors: flash(error, "danger")
             return render_template("patients/form.html", form=form, page_title="Modifier le dossier patient")
+        try:
+            new_photo = _save_person_photo(request.files.get("photo"), "patient")
+        except ValueError as exc:
+            flash(str(exc), "danger")
+            return render_template("patients/form.html", form=form, page_title="Modifier le dossier patient")
+        if new_photo:
+            patient.photo_path = new_photo
         patient.patient_number=number; patient.full_name=name; patient.sex=form.get("sex") or None
         patient.birth_date=birth_date; patient.phone=form.get("phone", "").strip() or None
         patient.email=form.get("email", "").strip() or None; patient.address=form.get("address", "").strip() or None
@@ -1403,7 +1440,12 @@ def hr_staff_new():
             hired=None
             try: hired=datetime.strptime(f.get("hired_on"), "%Y-%m-%d").date() if f.get("hired_on") else None
             except ValueError: flash("Date d'engagement invalide.", "danger"); return render_template("hr/staff_form.html", form=f)
-            profile=StaffProfile(employee_number=f"TEMP-{uuid4().hex}", full_name=name, job_title=title, department=f.get("department") or None, contract_type=f.get("contract_type") or None, contract_reference=f.get("contract_reference") or None, hired_on=hired, phone=f.get("phone") or None, email=f.get("email") or None, status=f.get("status") or "ACTIF")
+            try:
+                photo_path = _save_person_photo(request.files.get("photo"), "staff")
+            except ValueError as exc:
+                flash(str(exc), "danger")
+                return render_template("hr/staff_form.html", form=f)
+            profile=StaffProfile(employee_number=f"TEMP-{uuid4().hex}", full_name=name, job_title=title, photo_path=photo_path, department=f.get("department") or None, contract_type=f.get("contract_type") or None, contract_reference=f.get("contract_reference") or None, hired_on=hired, phone=f.get("phone") or None, email=f.get("email") or None, status=f.get("status") or "ACTIF")
             db.session.add(profile); db.session.flush(); profile.employee_number=f"HLP-RH-{datetime.utcnow().year}-{profile.id:06d}"; db.session.add(AuditLog(user_id=current_user.id, action="CREATION", entity="Personnel", entity_id=str(profile.id), details="Création du dossier RH")); db.session.commit()
             flash("Dossier du personnel créé. Sa carte de service est disponible immédiatement.", "success"); return redirect(url_for("main.staff_card", staff_id=profile.id))
         return render_template("hr/staff_form.html", form=f)
@@ -1478,6 +1520,27 @@ def hr_leave_decision(leave_id):
 def patient_card(patient_id):
     patient = db.get_or_404(Patient, patient_id)
     return render_template("cards/patient.html", patient=patient)
+
+
+@bp.get("/personnes/photos/<kind>/<filename>")
+@login_required
+def person_photo(kind, filename):
+    if kind == "patient":
+        if not user_has_permission(current_user, "patients.view"):
+            abort(403)
+        record = Patient.query.filter_by(photo_path=filename).first_or_404()
+    elif kind == "staff":
+        if not user_has_permission(current_user, "hr.manage"):
+            abort(403)
+        record = StaffProfile.query.filter_by(photo_path=filename).first_or_404()
+    else:
+        abort(404)
+    safe_name = Path(filename).name
+    if safe_name != filename:
+        abort(404)
+    response = make_response(send_file(Path(current_app.config["UPLOAD_FOLDER"]) / safe_name, mimetype="image/jpeg", conditional=True))
+    response.headers["Cache-Control"] = "private, max-age=300"
+    return response
 
 @bp.get("/rh/personnel/<int:staff_id>/carte")
 @login_required
