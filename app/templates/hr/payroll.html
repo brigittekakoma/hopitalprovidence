@@ -1,1 +1,34 @@
-{% extends 'base.html' %}{% block title %}Paie{% endblock %}{% block content %}<div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES</span><h1>Gestion de la paie</h1><p>Préparation des bulletins à partir de montants validés par la direction.</p></div></div><div class="panel"><h2>Créer un bulletin</h2><form method="post" action="{{ url_for('main.payroll_new') }}" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Personnel<select name="staff_id" required>{% for x in staff %}<option value="{{ x.id }}">{{ x.employee_number }} — {{ x.full_name }}</option>{% endfor %}</select></label><label>Période<input type="month" name="period" required></label><label>Salaire de base<input type="number" min="0" step="0.01" name="base_amount" required></label><label>Devise<select name="currency"><option>CDF</option><option>USD</option><option>EUR</option></select></label>{% for c in components %}<label>{{ c.name }} ({{ 'Gain' if c.component_type=='GAIN' else 'Retenue' }})<input type="number" min="0" step="0.01" name="component_{{ c.id }}" value="0"></label>{% endfor %}<div class="form-actions"><button class="btn">Préparer le bulletin</button></div></form></div><div class="panel mt-3"><h2>Rubriques de paie configurables</h2><p class="muted">Aucun taux légal ou montant salarial n’est préprogrammé. Les règles doivent être confirmées par l’établissement et son conseiller compétent.</p><form method="post" action="{{ url_for('main.payroll_component_new') }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="name" placeholder="Ex. Prime de fonction" required><select name="component_type"><option value="GAIN">Gain</option><option value="RETENUE">Retenue</option></select><button class="btn">Ajouter rubrique</button></form></div><div class="panel mt-3"><h2>Bulletins enregistrés</h2><div class="table-wrap"><table><thead><tr><th>Période</th><th>Matricule</th><th>Personnel</th><th>Brut</th><th>Retenues</th><th>Net</th><th>Statut</th><th></th></tr></thead><tbody>{% for r in records %}<tr><td>{{ r.period }}</td><td>{{ r.staff.employee_number }}</td><td>{{ r.staff.full_name }}</td><td>{{ '%.2f'|format(r.gross) }} {{ r.currency }}</td><td>{{ '%.2f'|format(r.deductions) }} {{ r.currency }}</td><td><b>{{ '%.2f'|format(r.net) }} {{ r.currency }}</b></td><td>{{ r.status }}</td><td><a class="btn btn-small" href="{{ url_for('main.payroll_slip',payroll_id=r.id) }}">Bulletin</a></td></tr>{% else %}<tr><td colspan="8">Aucun bulletin enregistré.</td></tr>{% endfor %}</tbody></table></div></div>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Paie RH · La Providence{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES · FINANCES</span><h1>Gestion de la paie</h1><p>Préparation des bulletins à partir de montants validés par la direction.</p></div></div>
+<div class="stats-grid">
+  <div class="stat-card"><span>Bulletins enregistrés</span><strong>{{ records|length }}</strong><small>Historique disponible</small></div>
+  <div class="stat-card"><span>Rubriques configurées</span><strong>{{ components|length }}</strong><small>Gains et retenues</small></div>
+</div>
+<section class="panel">
+  <div class="panel-head"><div><h2>Préparer un bulletin</h2><p class="muted">Vérifier les montants et la devise avant l’enregistrement.</p></div></div>
+  <form method="post" action="{{ url_for('main.payroll_new') }}" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Personnel<select name="staff_id" required>{% for x in staff %}<option value="{{ x.id }}">{{ x.employee_number }} — {{ x.full_name }}</option>{% endfor %}</select></label>
+    <label>Période<input type="month" name="period" required></label>
+    <label>Salaire de base<input type="number" min="0" step="0.01" name="base_amount" required></label>
+    <label>Devise<select name="currency"><option>CDF</option><option>USD</option><option>EUR</option></select></label>
+    {% for c in components %}<label>{{ c.name }} · {{ 'Gain' if c.component_type=='GAIN' else 'Retenue' }}<input type="number" min="0" step="0.01" name="component_{{ c.id }}" value="0"></label>{% endfor %}
+    <div class="form-actions"><button class="btn">Préparer le bulletin</button></div>
+  </form>
+</section>
+<section class="panel mt-3">
+  <div class="panel-head"><div><h2>Rubriques de paie configurables</h2><p class="muted">Aucun taux légal ou montant salarial n’est préprogrammé.</p></div></div>
+  <p class="privacy-note">Les règles, taux et montants doivent être confirmés par l’établissement et son conseiller compétent avant toute utilisation réelle.</p>
+  <form method="post" action="{{ url_for('main.payroll_component_new') }}" class="inline-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="name" placeholder="Ex. Prime de fonction" required><select name="component_type"><option value="GAIN">Gain</option><option value="RETENUE">Retenue</option></select><button class="btn">Ajouter une rubrique</button>
+  </form>
+</section>
+<section class="panel mt-3">
+  <div class="panel-head"><div><h2>Bulletins enregistrés</h2><p class="muted">Consulter le détail des bulletins préparés.</p></div><span class="count-pill">{{ records|length }} bulletin(s)</span></div>
+  <div class="table-wrap"><table><thead><tr><th>Période</th><th>Matricule</th><th>Personnel</th><th>Brut</th><th>Retenues</th><th>Net</th><th>Statut</th><th></th></tr></thead><tbody>
+  {% for r in records %}<tr><td>{{ r.period }}</td><td>{{ r.staff.employee_number }}</td><td><strong>{{ r.staff.full_name }}</strong></td><td>{{ '%.2f'|format(r.gross) }} {{ r.currency }}</td><td>{{ '%.2f'|format(r.deductions) }} {{ r.currency }}</td><td><strong>{{ '%.2f'|format(r.net) }} {{ r.currency }}</strong></td><td><span class="status">{{ r.status }}</span></td><td><a class="btn btn-small light" href="{{ url_for('main.payroll_slip',payroll_id=r.id) }}">Voir bulletin</a></td></tr>{% else %}<tr><td colspan="8" class="empty">Aucun bulletin enregistré.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}
