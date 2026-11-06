@@ -2,10 +2,10 @@
 {% block title %}Présences RH · La Providence{% endblock %}
 {% block content %}
 <div class="page-head"><div><span class="eyebrow">RESSOURCES HUMAINES</span><h1>Présences et horaires</h1><p>Enregistrement journalier des présences du personnel.</p></div></div>
-<div class="stats-grid">
-  <div class="stat-card"><span>Fiches récentes</span><strong>{{ records|length }}</strong><small>Historique affiché</small></div>
-  <div class="stat-card"><span>Personnel disponible</span><strong>{{ staff|length }}</strong><small>Dossiers sélectionnables</small></div>
-  <div class="stat-card"><span>Date de saisie</span><strong>{{ today.strftime('%d/%m/%Y') }}</strong><small>Date proposée par défaut</small></div>
+<div class="metric-grid">
+  <div class="metric-card"><span>Fiches récentes</span><strong>{{ records|length }}</strong><small>Historique affiché</small></div>
+  <div class="metric-card"><span>Personnel disponible</span><strong>{{ staff|length }}</strong><small>Dossiers sélectionnables</small></div>
+  <div class="metric-card"><span>Date de saisie</span><strong>{{ today.strftime('%d/%m/%Y') }}</strong><small>Date proposée par défaut</small></div>
 </div>
 <section class="panel">
   <div class="panel-head"><div><h2>Nouvelle fiche de présence</h2><p class="muted">Une fiche par agent et par journée.</p></div></div>
